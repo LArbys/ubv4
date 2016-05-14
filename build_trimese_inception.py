@@ -38,7 +38,7 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
     if net_type=="train":
         train = True
 
-    data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [0,1] )
+    data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [1,2] )
     stems = []
     for n,data_layer in enumerate(data_layers):
         stems.append( stem( "plane%d"%(n), net, data_layer, user_batch_norm, train ) )
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     test_cfg = "test_filler.cfg"
     use_batch_norm = True
 
-    train_net   = buildnet( train_cfg, 1, 756, 864, 3, use_batch_norm, net_type="train"  )
+    train_net   = buildnet( train_cfg, 10, 756, 864, 3, use_batch_norm, net_type="train"  )
     test_net    = buildnet( test_cfg,  1, 756, 864, 3, use_batch_norm, net_type="test"  )
 
     #deploy_net  = buildnet( testdb, test_mean, 1, 768, 768, 3, net_type="deploy"  )
