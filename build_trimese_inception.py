@@ -31,27 +31,28 @@ def stem( corename, net, data_top, addbatchnorm=True, train=True ):
     cat   = lt.concat_layer( net, "stem_concat_%s"%(corename), *ls )
 
     # split 7s
+    # use same padding up to 3x3
     conv_5a = lt.convolution_layer( net, cat,     "stem_conv5a_%s"%(corename), "stem_conv5a_%s"%(corename),
                                     64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     conv_5b = lt.convolution_layer( net, conv_5a, "stem_conv5b_%s"%(corename), "stem_conv5b_%s"%(corename),
-                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=1, kernel_w=7 )
+                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=1, kernel_w=7, pad_h=0, pad_w=3 )
     conv_5c = lt.convolution_layer( net, conv_5b, "stem_conv5c_%s"%(corename), "stem_conv5c_%s"%(corename),
-                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=7, kernel_w=1 )
+                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=7, kernel_w=1, pad_h=3, pad_w=0 )
     conv_5d = lt.convolution_layer( net, conv_5c, "stem_conv5d_%s"%(corename), "stem_conv5d_%s"%(corename),
-                                    64, 1, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+                                    64, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
 
     # split 3
     conv_6a = lt.convolution_layer( net, cat, "stem_conv6a_%s"%(corename), "stem_conv6a_%s"%(corename),
                                     96, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     conv_6b = lt.convolution_layer( net, conv_6a, "stem_conv6b_%s"%(corename), "stem_conv6b_%s"%(corename),
-                                    96, 1, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+                                    96, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
     ls2  = [conv_5d, conv_6b]
     cat2 = lt.concat_layer( net, "stem_concat2_%s"%(corename), *ls2 )
 
     # split 2
     conv7  = lt.convolution_layer( net, cat2, "stem_conv7_%s"%(corename), "stem_conv7_%s"%(corename),
                                    192, 1, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
-    mp7    = lt.pool_layer( net, cat2, "stem_mp7_%s"%(corename), 3, 2 )
+    mp7    = lt.pool_layer( net, cat2, "stem_mp7_%s"%(corename), 3, 1 )
 
     ls3 = [ conv7, mp7 ]
     cat3 = lt.concat_layer( net, "stem_concat3_%s"%(corename), *ls3 )

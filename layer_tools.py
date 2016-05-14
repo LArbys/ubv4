@@ -3,13 +3,23 @@ from caffe import layers as L
 from caffe import params as P
 
 def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs, stride, kernel_size, pad, init_bias, 
-                       addbatchnorm=True, train=True, kernel_w=None, kernel_h=None ):
+                       addbatchnorm=True, train=True, kernel_w=None, kernel_h=None, pad_w=None, pad_h=None ):
     if kernel_w is None or kernel_h is None:
+        if pad_w is None:
+            my_pad_w = pad
+        else:
+            my_pad_w = pad_w
+        if pad_h is None:
+            my_pad_h = pad
+        else:
+            my_pad_h = pad_h
+        
         # square convolution
         conv = L.Convolution( input_layer, 
                               kernel_size=kernel_size,
                               stride=stride,
-                              pad=pad,
+                              pad_h=my_pad_h,
+                              pad_w=my_pad_w,
                               num_output=noutputs,
                               weight_filler=dict(type="msra"),
                               bias_filler=dict(type="constant",value=init_bias),
@@ -19,7 +29,8 @@ def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs,
                               kernel_w=kernel_w,
                               kernel_h=kernel_h,
                               stride=stride,
-                              pad=pad,
+                              pad_h=pad_h,
+                              pad_w=pad_w,
                               num_output=noutputs,
                               weight_filler=dict(type="msra"),
                               bias_filler=dict(type="constant",value=init_bias),
