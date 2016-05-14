@@ -57,7 +57,68 @@ def stem( corename, net, data_top, addbatchnorm=True, train=True ):
     ls3 = [ conv7, mp7 ]
     cat3 = lt.concat_layer( net, "stem_concat3_%s"%(corename), *ls3 )
 
-    return cat3
+    nout = 352
+
+    return cat3, nout
+
+def inceptionA( net, corename, bot, ninputs, noutput, nbottleneck, addbatchnorm=True, train=True ):
+    name = corename+"_IA"
+    if ninputs!=noutput:
+        bypass_conv = L.Convolution( bot,
+                                     kernel_size=1,
+                                     stride=1,
+                                     num_output=noutput,
+                                     pad=0,
+                                     bias_term=False,
+                                     weight_filler=dict(type="msra") )
+        if addbatchnorm:
+            if train:
+                bypass_bn = L.BatchNorm(bypass_conv,in_place=True,batch_norm_param=dict(use_global_stats=False),
+                                        param=[dict(lr_mult=0),dict(lr_mult=0),dict(lr_mult=0)])
+            else:
+                bypass_bn = L.BatchNorm(bypass_conv,in_place=True,batch_norm_param=dict(use_global_stats=True))
+            bypass_scale = L.Scale(bypass_bn,in_place=True,scale_param=dict(bias_term=True))
+            net.__setattr__(name+"_bypass",bypass_conv)
+            net.__setattr__(name+"_bypass_bn",bypass_bn)
+            net.__setattr__(name+"_bypass_scale",bypass_scale)
+        else:
+            net.__setattr__(name+"_bypass",bypass_conv)
+        bypass_layer = bypass_conv
+    else:
+        bypass_layer  = bot
+
+    
+    conva1 = lt.convolution_layer( net, bot, name+"_conva", name+"_conva",
+                                   nbottleneck, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    convb1 = lt.convolution_layer( net, bot, name+"_convb1", name+"_convb1",
+                                   nbottleneck, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    convb2 = lt.convolution_layer( net, convb1, name+"_convb2", name+"_convb2",
+                                   nbottleneck, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    convc1 = lt.convolution_layer( net, bot, name+"_convc1", name+"_convc1",
+                                   nbottleneck, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    convc2 = lt.convolution_layer( net, convc1, name+"_convc2", name+"_convc2",
+                                   nbottleneck, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
+    convc3 = lt.convolution_layer( net, convc2, name+"_convc3", name+"_convc3",
+                                   nbottleneck, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    ls = [conva1,convb2,convc3]
+    cat    = lt.concat_layer( net, name+"_concat", *ls )
+
+    convd = lt.convolution_layer( net, cat, name+"_convd",name+"_convd",
+                                  noutput, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    
+    ex_last_layer = convd
+    
+    # Eltwise
+    elt_layer = L.Eltwise(bypass_layer,ex_last_layer, eltwise_param=dict(operation=P.Eltwise.SUM))
+    elt_relu  = L.ReLU( elt_layer,in_place=True)
+    net.__setattr__(name+"_eltwise",elt_layer)
+    net.__setattr__(name+"_eltwise_relu",elt_relu)
+
+    return elt_relu
+
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train"):
     net = caffe.NetSpec()
@@ -69,7 +130,10 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
     data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [1,2] )
     stems = []
     for n,data_layer in enumerate(data_layers):
-        stems.append( stem( "plane%d"%(n), net, data_layer, False, train ) ) # no batch norm for stem. too many parameters!
+        outstem,nout = stem( "plane%d"%(n), net, data_layer, False, train )
+        ia1     = inceptionA( net, "ia1_plane%d"%(n), outstem, nout, 256, 32, False, train )
+        stems.append( ia1  ) # no batch norm for stem. too many parameters!
+
 
     concat = lt.concat_layer( net, "mergeplanes", *stems )
 
