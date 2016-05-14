@@ -18,13 +18,18 @@ def root_data_layer_trimese( net, batch_size, config, filler_name, slice_points 
     return slices, label
 
 def stem( corename, net, data_top, addbatchnorm=True, train=True ):
-    conv1 = lt.convolution_layer( net, data_top, "%s_conv1"%(corename), "stem_conv1_%s"%(corename), 
+    conv1 = lt.convolution_layer( net, data_top, "stem_conv1_%s"%(corename), "stem_conv1_%s"%(corename), 
                                   32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
-    conv2 = lt.convolution_layer( net, conv1, "%s_conv2"%(corename), "stem_conv2_%s"%(corename), 
+    conv2 = lt.convolution_layer( net, conv1,    "stem_conv2_%s"%(corename), "stem_conv2_%s"%(corename), 
                                   32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
-    conv3 = lt.convolution_layer( net, conv2, "%s_conv3"%(corename), "stem_conv3_%s"%(corename), 
+    conv3 = lt.convolution_layer( net, conv2,    "stem_conv3_%s"%(corename), "stem_conv3_%s"%(corename), 
                                   32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
-    return conv3
+    mp    = lt.pool_layer( net, conv3, "stem_mp1_%s"%(corename), 3, 2 )
+    conv4 = lt.convolution_layer( net, conv3, "stem_conv4_%s"%(corename), "stem_conv4_%s"%(corename),
+                                  32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    ls    = [mp,conv4]
+    cat   = lt.concat_layer( net, "stem_concat_%s"%(corename), *ls )
+    return cat
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train"):
     net = caffe.NetSpec()
