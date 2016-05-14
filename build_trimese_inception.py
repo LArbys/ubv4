@@ -19,7 +19,12 @@ def root_data_layer_trimese( net, batch_size, config, filler_name, slice_points 
 
 def stem( corename, net, data_top, addbatchnorm=True, train=True ):
     conv1 = lt.convolution_layer( net, data_top, "%s_conv1"%(corename), "stem_conv1_%s"%(corename), 
-                                  32, 2, 3, 0, 0.0, addbatchnorm=False, train=train )
+                                  32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    conv2 = lt.convolution_layer( net, conv1, "%s_conv2"%(corename), "stem_conv2_%s"%(corename), 
+                                  32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    conv3 = lt.convolution_layer( net, conv2, "%s_conv3"%(corename), "stem_conv3_%s"%(corename), 
+                                  32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    return conv3
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train"):
     net = caffe.NetSpec()
@@ -29,10 +34,11 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
         train = True
 
     data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [0,1,2] )
+    stems = []
     for n,data_layer in enumerate(data_layers):
-        stem( "plane%d"%(n), net, data_layer, user_batch_norm, train )
+        stems.append( stem( "plane%d"%(n), net, data_layer, user_batch_norm, train ) )
 
-    #data_layers,label = lt.data_layer_trimese( net, inputdb, mean_file, batch_size, net_type, height, width, nchannels, [1,2], crop_size=768 )
+    concat = lt.concat_layer( net, "mergeplanes", *stems )
 
     # # First conv  layer
     # branch_ends = []
@@ -74,14 +80,14 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
     
     # fc1 = lt.final_fully_connect( net, lastpool_layer, nclasses=512 )
     # fc2 = lt.final_fully_connect( net, fc1, nclasses=4096 )
-    # fc3 = lt.final_fully_connect( net, fc2, nclasses=2 )
+    fc2 = lt.final_fully_connect( net, concat, nclasses=2 )
     
-    # if train:
-    #     net.loss = L.SoftmaxWithLoss(fc3, net.label )
-    #     net.acc = L.Accuracy(fc3,net.label)
-    # else:
-    #     net.probt = L.Softmax( fc3 )
-    #     net.acc = L.Accuracy(fc3,net.label)
+    if train:
+        net.loss = L.SoftmaxWithLoss(fc2, net.label )
+        net.acc = L.Accuracy(fc2,net.label)
+    else:
+        net.probt = L.Softmax( fc2 )
+        net.acc = L.Accuracy(fc2,net.label)
 
     return net
 
@@ -151,6 +157,7 @@ if __name__ == "__main__":
     #deploy_net  = buildnet( testdb, test_mean, 1, 768, 768, 3, net_type="deploy"  )
 
     trainout  = open('ub_trimese_inceptionv4_train.prototxt','w')
+    print >> trainout, "name:ubv4"
     print >> trainout, train_net.to_proto()
     trainout.close()
 
