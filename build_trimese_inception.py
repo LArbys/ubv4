@@ -33,7 +33,7 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
     if net_type=="train":
         train = True
 
-    data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [0,1,2] )
+    data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [0,1] )
     stems = []
     for n,data_layer in enumerate(data_layers):
         stems.append( stem( "plane%d"%(n), net, data_layer, user_batch_norm, train ) )
@@ -149,21 +149,27 @@ layer {
 
 if __name__ == "__main__":
     
-    train_cfg = "train_process.cfg"
+    train_cfg = "train_filler.cfg"
+    test_cfg = "test_filler.cfg"
     use_batch_norm = True
 
     train_net   = buildnet( train_cfg, 1, 756, 864, 3, use_batch_norm, net_type="train"  )
-    #test_net    = buildnet( testdb,   test_mean, 1, 768, 768, 3, net_type="test"  )
+    test_net    = buildnet( test_cfg,  1, 756, 864, 3, use_batch_norm, net_type="test"  )
+
     #deploy_net  = buildnet( testdb, test_mean, 1, 768, 768, 3, net_type="deploy"  )
 
     trainout  = open('ub_trimese_inceptionv4_train.prototxt','w')
-    print >> trainout, "name:ubv4"
+    print >> trainout, "name:\"ubv4_train\""
     print >> trainout, train_net.to_proto()
     trainout.close()
+    
+    testout   = open('ub_trimese_inceptionv4_test.prototxt','w')
+    print >> testout, "name:\"ubv4_test\""
+    print >> testout, test_net.to_proto()
+    testout.close()
 
-    #testout   = open('ub_trimese_resnet_test.prototxt','w')
     #deployout = open('ub_trimese_resnet_deploy.prototxt','w')
-    #print >> testout, test_net.to_proto()
+    
     #print >> deployout, deploy_net.to_proto()
     #testout.close()
 
