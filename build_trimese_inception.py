@@ -119,6 +119,25 @@ def inceptionA( net, corename, bot, ninputs, noutput, nbottleneck, addbatchnorm=
 
     return elt_relu
 
+def reductionA( net, corename, bot, noutN, noutK, noutL, noutM, addbatchnorm=True, train=True ):
+    mpa    = lt.pool_layer( net, bot, "reducA_mpA_%s"%(corename), 3, 2 )
+    
+    convb  = lt.convolution_layer( net, bot, "reducA_convb_%s"%(corename), "reducA_convb_%s"%(corename),
+                                   noutN, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    convc1 = lt.convolution_layer( net, bot, "reducA_convc1_%s"%(corename), "reducA_convc1_%s"%(corename),
+                                   noutK, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    convc2 = lt.convolution_layer( net, convc1, "reducA_convc2_%s"%(corename), "reducA_convc2_%s"%(corename),
+                                   noutL, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
+    convc3 = lt.convolution_layer( net, convc2, "reducA_convc3_%s"%(corename), "reducA_convc3_%s"%(corename),
+                                   noutM, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    ls  = [mpa,convb,convc3]
+    cat = lt.concat_layer( net, "reducA_concat_%s"%(corename), *ls )
+
+    return cat
+    
+
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train"):
     net = caffe.NetSpec()
@@ -130,9 +149,12 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
     data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [1,2] )
     stems = []
     for n,data_layer in enumerate(data_layers):
-        outstem,nout = stem( "plane%d"%(n), net, data_layer, False, train )
-        ia1     = inceptionA( net, "ia1_plane%d"%(n), outstem, nout, 256, 32, False, train )
-        stems.append( ia1  ) # no batch norm for stem. too many parameters!
+        outstem,nout = stem( "plane%d"%(n), net, data_layer, addbatchnorm=True, train=train )
+        ia1     = inceptionA( net, "ia1_plane%d"%(n), outstem, nout, 256, 32, addbatchnorm=False, train=train )
+        ia2     = inceptionA( net, "ia2_plane%d"%(n),     ia1, 256, 256, 32, addbatchnorm=False, train=train )
+        ia3     = inceptionA( net, "ia3_plane%d"%(n),     ia2, 256, 256, 32, addbatchnorm=False, train=train )
+        reda    = reductionA( net, "plane%d"%(n),       ia3, 32, 32, 32, 32, addbatchnorm=False, train=train )
+        stems.append( reda  ) # no batch norm for stem. too many parameters!
 
 
     concat = lt.concat_layer( net, "mergeplanes", *stems )
