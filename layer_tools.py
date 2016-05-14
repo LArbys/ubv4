@@ -174,7 +174,7 @@ def data_layer_trimese( net, inputdb, mean_file, batch_size, net_type, height, w
 
     return slices, label
     
-def pool_layer( net, inputlayer, layername, kernel_size, stride, pooltype=P.Pooling.MAX ):
-    pooll = L.Pooling(inputlayer, kernel_size=kernel_size, stride=stride, pool=pooltype)
+def pool_layer( net, inputlayer, layername, kernel_size, stride, pooltype=P.Pooling.MAX, pad_w=0, pad_h=0 ):
+    pooll = L.Pooling(inputlayer, kernel_size=kernel_size, stride=stride, pool=pooltype, pad_w=pad_w, pad_h=pad_h)
     net.__setattr__( layername, pooll )
     return pooll

@@ -120,17 +120,17 @@ def inceptionA( net, corename, bot, ninputs, noutput, nbottleneck, addbatchnorm=
     return elt_relu
 
 def reductionA( net, corename, bot, noutN, noutK, noutL, noutM, addbatchnorm=True, train=True ):
-    mpa    = lt.pool_layer( net, bot, "reducA_mpA_%s"%(corename), 3, 2 )
+    mpa    = lt.pool_layer( net, bot, "reducA_mpA_%s"%(corename), 3, 2, pad_w=1 )
     
     convb  = lt.convolution_layer( net, bot, "reducA_convb_%s"%(corename), "reducA_convb_%s"%(corename),
-                                   noutN, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+                                   noutN, 2, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=1, pad_h=1 )
 
     convc1 = lt.convolution_layer( net, bot, "reducA_convc1_%s"%(corename), "reducA_convc1_%s"%(corename),
                                    noutK, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     convc2 = lt.convolution_layer( net, convc1, "reducA_convc2_%s"%(corename), "reducA_convc2_%s"%(corename),
                                    noutL, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
     convc3 = lt.convolution_layer( net, convc2, "reducA_convc3_%s"%(corename), "reducA_convc3_%s"%(corename),
-                                   noutM, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+                                   noutM, 2, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=1, pad_h=1 )
 
     ls  = [mpa,convb,convc3]
     cat = lt.concat_layer( net, "reducA_concat_%s"%(corename), *ls )
