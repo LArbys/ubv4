@@ -29,7 +29,34 @@ def stem( corename, net, data_top, addbatchnorm=True, train=True ):
                                   32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     ls    = [mp,conv4]
     cat   = lt.concat_layer( net, "stem_concat_%s"%(corename), *ls )
-    return cat
+
+    # split 7s
+    conv_5a = lt.convolution_layer( net, cat,     "stem_conv5a_%s"%(corename), "stem_conv5a_%s"%(corename),
+                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    conv_5b = lt.convolution_layer( net, conv_5a, "stem_conv5b_%s"%(corename), "stem_conv5b_%s"%(corename),
+                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=1, kernel_w=7 )
+    conv_5c = lt.convolution_layer( net, conv_5b, "stem_conv5c_%s"%(corename), "stem_conv5c_%s"%(corename),
+                                    64, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=7, kernel_w=1 )
+    conv_5d = lt.convolution_layer( net, conv_5c, "stem_conv5d_%s"%(corename), "stem_conv5d_%s"%(corename),
+                                    64, 1, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    # split 3
+    conv_6a = lt.convolution_layer( net, cat, "stem_conv6a_%s"%(corename), "stem_conv6a_%s"%(corename),
+                                    96, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    conv_6b = lt.convolution_layer( net, conv_6a, "stem_conv6b_%s"%(corename), "stem_conv6b_%s"%(corename),
+                                    96, 1, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    ls2  = [conv_5d, conv_6b]
+    cat2 = lt.concat_layer( net, "stem_concat2_%s"%(corename), *ls2 )
+
+    # split 2
+    conv7  = lt.convolution_layer( net, cat2, "stem_conv7_%s"%(corename), "stem_conv7_%s"%(corename),
+                                   192, 1, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    mp7    = lt.pool_layer( net, cat2, "stem_mp7_%s"%(corename), 3, 2 )
+
+    ls3 = [ conv7, mp7 ]
+    cat3 = lt.concat_layer( net, "stem_concat3_%s"%(corename), *ls3 )
+
+    return cat3
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train"):
     net = caffe.NetSpec()
@@ -41,7 +68,7 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
     data_layers, label = root_data_layer_trimese( net, batch_size, processcfg, net_type, [1,2] )
     stems = []
     for n,data_layer in enumerate(data_layers):
-        stems.append( stem( "plane%d"%(n), net, data_layer, user_batch_norm, train ) )
+        stems.append( stem( "plane%d"%(n), net, data_layer, False, train ) ) # no batch norm for stem. too many parameters!
 
     concat = lt.concat_layer( net, "mergeplanes", *stems )
 

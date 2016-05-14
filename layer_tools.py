@@ -2,15 +2,29 @@ import os,sys
 from caffe import layers as L
 from caffe import params as P
 
-def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs, stride, kernel_size, pad, init_bias, addbatchnorm=True, train=True ):
-    conv = L.Convolution( input_layer, 
-                          kernel_size=kernel_size,
-                          stride=stride,
-                          pad=pad,
-                          num_output=noutputs,
-                          weight_filler=dict(type="msra"),
-                          bias_filler=dict(type="constant",value=init_bias),
-                          param=[dict(name="par_%s_conv_w"%(parname_stem)),dict(name="par_%s_conv_b"%(parname_stem))] )
+def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs, stride, kernel_size, pad, init_bias, 
+                       addbatchnorm=True, train=True, kernel_w=None, kernel_h=None ):
+    if kernel_w is None or kernel_h is None:
+        # square convolution
+        conv = L.Convolution( input_layer, 
+                              kernel_size=kernel_size,
+                              stride=stride,
+                              pad=pad,
+                              num_output=noutputs,
+                              weight_filler=dict(type="msra"),
+                              bias_filler=dict(type="constant",value=init_bias),
+                              param=[dict(name="par_%s_conv_w"%(parname_stem)),dict(name="par_%s_conv_b"%(parname_stem))] )
+    else:
+        conv = L.Convolution( input_layer, 
+                              kernel_w=kernel_w,
+                              kernel_h=kernel_h,
+                              stride=stride,
+                              pad=pad,
+                              num_output=noutputs,
+                              weight_filler=dict(type="msra"),
+                              bias_filler=dict(type="constant",value=init_bias),
+                              param=[dict(name="par_%s_conv_w"%(parname_stem)),dict(name="par_%s_conv_b"%(parname_stem))] )
+        
     net.__setattr__( layername_stem+"_conv", conv )
     if addbatchnorm:
         if train:
@@ -33,8 +47,7 @@ def concat_layer( net, layername, *bots ):
     convat = L.Concat(*bots, concat_param=dict(axis=1))
     net.__setattr__( "%s_concat"%(layername), convat )
     return convat
-        
-    
+            
 def final_fully_connect( net, bot, nclasses=2 ):
     net.fc2 = L.InnerProduct( bot, num_output=nclasses, weight_filler=dict(type='msra'))
     return net.fc2
