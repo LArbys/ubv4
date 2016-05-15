@@ -136,7 +136,37 @@ def reductionA( net, corename, bot, noutN, noutK, noutL, noutM, addbatchnorm=Tru
     cat = lt.concat_layer( net, "reducA_concat_%s"%(corename), *ls )
 
     return cat
+
+def inceptionB( net, corename, bot, addbatchnorm=True, train=True ):
+    apa   = lt.pool_layer( net, bot, "IB_avepool_%s"%(corename), 3, 1, pooltype=P.Pooling.AVE, pad_w=1, pad_h=1 )
+    conva = lt.convolution_layer( net, apa, "IB_conva_%s"%(corename), "IB_conva_%s"%(corename),
+                                  128, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     
+    convb = lt.convolution_layer( net, bot, "IB_convb_%s"%(corename), "IB_convb_%s"%(corename),
+                                  384, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train )
+    
+    convc1 = lt.convolution_layer( net, bot, "IB_convc1_%s"%(corename), "IB_convc1_%s"%(corename),
+                                   192, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train )
+    convc2 = lt.convolution_layer( net, convc1, "IB_convc2_%s"%(corename), "IB_convc2_%s"%(corename),
+                                   224, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=1, kernel_w=7, pad_h=0, pad_w=3 )
+    convc3 = lt.convolution_layer( net, convc2, "IB_convc3_%s"%(corename), "IB_convc3_%s"%(corename),
+                                   256, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=7, kernel_w=1, pad_h=3, pad_w=0 )
+
+    convd1 = lt.convolution_layer( net, bot, "IB_convd1_%s"%(corename), "IB_convd1_%s"%(corename),
+                                   192, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train )
+    convd2 = lt.convolution_layer( net, convd1, "IB_convd2_%s"%(corename),"IB_convd2_%s"%(corename),
+                                   192, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=1, kernel_w=7, pad_h=0, pad_w=3 )
+    convd3 = lt.convolution_layer( net, convd2, "IB_convd3_%s"%(corename),"IB_convd3_%s"%(corename),
+                                   224, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=7, kernel_w=1, pad_h=3, pad_w=0 )
+    convd4 = lt.convolution_layer( net, convd3, "IB_convd4_%s"%(corename),"IB_convd4_%s"%(corename),
+                                   224, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=1, kernel_w=7, pad_h=0, pad_w=3 )
+    convd5 = lt.convolution_layer( net, convd4, "IB_convd5_%s"%(corename),"IB_convd5_%s"%(corename),
+                                   256, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=7, kernel_w=1, pad_h=3, pad_w=0 )
+
+    ls = [ conva, convb, convc3, convd5 ]
+    cat = lt.concat_layer( net, "inductB_concat_%s"%(corename), *ls )
+    
+    return cat
 
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train"):
@@ -154,6 +184,9 @@ def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm,
         ia2     = inceptionA( net, "ia2_plane%d"%(n),     ia1, 256, 256, 32, addbatchnorm=False, train=train )
         ia3     = inceptionA( net, "ia3_plane%d"%(n),     ia2, 256, 256, 32, addbatchnorm=False, train=train )
         reda    = reductionA( net, "plane%d"%(n),       ia3, 32, 32, 32, 32, addbatchnorm=False, train=train )
+        ib1     = inceptionB( net, "ib1_plane%d"%(n), reda, addbatchnorm=False, train=train )
+        ib2     = inceptionB( net, "ib2_plane%d"%(n),  ib1, addbatchnorm=False, train=train )
+        ib3     = inceptionB( net, "ib3_plane%d"%(n),  ib2, addbatchnorm=False, train=train )
         stems.append( reda  ) # no batch norm for stem. too many parameters!
 
 
