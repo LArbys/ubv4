@@ -19,6 +19,10 @@ Seems to have gotten stucked. So stopped it to lower weight decay to 0.001.
 
 ![Plane 1, Attempt1](https://github.com/LArbys/ubv4/blob/master/models/002/training_plot_plane1_attempt1.png)
 
+### Plane 2, Attempt 1: weight decay 0.001, batch size 10. Still in Progress.
+
+![Plane 2, Attemp 1](https://github.com/LArbys/ubv4/tree/master/models/002/plane2)
+
 ## Results
 
 Coming.
