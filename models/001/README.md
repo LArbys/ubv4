@@ -23,7 +23,7 @@ In general, there were a lot of non-vertex, cosmic regions that looked neutrino-
 
 ### MC Patch study
 
-Did a study where only a patch is given to the network.  Gave patches for one plane at a time.  The color shading indicated which plane patch provided a high neutrino score. Processed 100 MC Neutrino+Cosmic overlay events. You can find them in the images_placedin_numc folder.
+Did a study where only a patch is given to the network.  Gave patches for one plane at a time.  The color shading indicated which plane patch provided a high neutrino score. Processed 100 MC Neutrino+Cosmic overlay events. You can find them in the images_placedin_numc folder. *NOTE: bounding boxes are fubar*
 
 * Example of the network doing something reasonable:
     Notice how the blue (U) and red (Y) planes have color patches. These areas gave high neutrino score.  But why no green patch (from the V plane).  The lack of green patch over obvious neutrinos is a pattern.
