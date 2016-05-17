@@ -3,7 +3,7 @@ from caffe import layers as L
 from caffe import params as P
 
 def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs, stride, kernel_size, pad, init_bias, 
-                       addbatchnorm=True, train=True, kernel_w=None, kernel_h=None, pad_w=None, pad_h=None ):
+                       addbatchnorm=True, train=True, kernel_w=None, kernel_h=None, pad_w=None, pad_h=None, w_lr=1.0, b_lr=1.0 ):
     if kernel_w is None or kernel_h is None:
         if pad_w is None:
             my_pad_w = pad
@@ -23,7 +23,7 @@ def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs,
                               num_output=noutputs,
                               weight_filler=dict(type="msra"),
                               bias_filler=dict(type="constant",value=init_bias),
-                              param=[dict(name="par_%s_conv_w"%(parname_stem)),dict(name="par_%s_conv_b"%(parname_stem))] )
+                              param=[dict(name="par_%s_conv_w"%(parname_stem),lr_mult=w_lr),dict(name="par_%s_conv_b"%(parname_stem),lr_mult=b_lr)] )
     else:
         conv = L.Convolution( input_layer, 
                               kernel_w=kernel_w,
@@ -34,7 +34,7 @@ def convolution_layer( net, input_layer, layername_stem, parname_stem, noutputs,
                               num_output=noutputs,
                               weight_filler=dict(type="msra"),
                               bias_filler=dict(type="constant",value=init_bias),
-                              param=[dict(name="par_%s_conv_w"%(parname_stem)),dict(name="par_%s_conv_b"%(parname_stem))] )
+                              param=[dict(name="par_%s_conv_w"%(parname_stem),lr_mult=w_lr),dict(name="par_%s_conv_b"%(parname_stem),lr_mult=b_lr)] )
         
     net.__setattr__( layername_stem+"_conv", conv )
     if addbatchnorm:
@@ -59,9 +59,10 @@ def concat_layer( net, layername, *bots ):
     net.__setattr__( "%s_concat"%(layername), convat )
     return convat
             
-def final_fully_connect( net, bot, nclasses=2 ):
-    net.fc2 = L.InnerProduct( bot, num_output=nclasses, weight_filler=dict(type='msra'))
-    return net.fc2
+def final_fully_connect( net, bot, name, nclasses=2 ):
+    fc2 = L.InnerProduct( bot, num_output=nclasses, weight_filler=dict(type='msra'))
+    net.__setattr__( name, fc2 )
+    return fc2
 
 def resnet_module( net, bot, name, ninput, kernel_size, stride, pad, bottleneck_nout, expand_nout, use_batch_norm, train ):
     if ninput!=expand_nout:
