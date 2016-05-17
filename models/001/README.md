@@ -49,4 +49,4 @@ Could increase weight decay to mitigate them.
 
 Also, how to get all three planes involved?
 Could try training them separately, then fine-tuning a FC layer that concats the features from the three planes.
-Is the quick size reduction of the image be hurting recognition?
+Is the quick size reduction of the image (cutting image in half in first three convolutional layers) hurting recognition?
