@@ -190,6 +190,58 @@ def reductionB( net, corename, bot, addbatchnorm=True, train=True ):
 
     return cat
 
+def inceptionResB( net, corename, bot, ninputs, noutput, nbottleneck, addbatchnorm=True, train=True ):
+    name = corename+"_IResB"
+    if ninputs!=noutput:
+        bypass_conv = L.Convolution( bot,
+                                     kernel_size=1,
+                                     stride=1,
+                                     num_output=noutput,
+                                     pad=0,
+                                     bias_term=False,
+                                     weight_filler=dict(type="msra") )
+        if addbatchnorm:
+            if train:
+                bypass_bn = L.BatchNorm(bypass_conv,in_place=True,batch_norm_param=dict(use_global_stats=False),
+                                        param=[dict(lr_mult=0),dict(lr_mult=0),dict(lr_mult=0)])
+            else:
+                bypass_bn = L.BatchNorm(bypass_conv,in_place=True,batch_norm_param=dict(use_global_stats=True))
+            bypass_scale = L.Scale(bypass_bn,in_place=True,scale_param=dict(bias_term=True))
+            net.__setattr__(name+"_bypass",bypass_conv)
+            net.__setattr__(name+"_bypass_bn",bypass_bn)
+            net.__setattr__(name+"_bypass_scale",bypass_scale)
+        else:
+            net.__setattr__(name+"_bypass",bypass_conv)
+        bypass_layer = bypass_conv
+    else:
+        bypass_layer  = bot
+
+    conva1 = lt.convolution_layer( net, bot, name+"_conva1", name+"_conva1",
+                                   nbottleneck, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    convb1 = lt.convolution_layer( net, bot, name+"_convb1", name+"_convb1",
+                                   nbottleneck, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+    convb2 = lt.convolution_layer( net, convb1, name+"_convb2", name+"_convb2",
+                                   nbottleneck, 1, 7, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=7, kernel_h=1, pad_w=3, pad_h=0 )
+    convb3 = lt.convolution_layer( net, convb2, name+"_convb3", name+"_convb3",
+                                   nbottleneck, 1, 7, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=1, kernel_h=7, pad_w=0, pad_h=3 )
+
+    ls = [conva1, convb3]
+    concat = lt.concat_layer( net, name+"_concat", *ls )
+
+    convc = lt.convolution_layer( net, concat, name+"_convc", name+"_convc",
+                                  noutput, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
+
+    ex_last_layer = convc
+
+    # Eltwise
+    elt_layer = L.Eltwise(bypass_layer,ex_last_layer, eltwise_param=dict(operation=P.Eltwise.SUM))
+    elt_relu  = L.ReLU( elt_layer,in_place=True)
+    net.__setattr__(name+"_eltwise",elt_layer)
+    net.__setattr__(name+"_eltwise_relu",elt_relu)
+
+    return elt_relu
+
 
 def buildnet( processcfg, batch_size, height, width, nchannels, user_batch_norm, net_type="train", targetplane=None):
     net = caffe.NetSpec()
