@@ -36,6 +36,11 @@ Did a study where only a patch is given to the network.  Gave patches for one pl
 * Finally the network looks at a green track -- but's a stopping muon
    ![Stopping Mu on V plane](https://github.com/LArbys/ubv4/blob/master/models/001/images_placedin_numc/NUMC_99.PNG)
 
+* V place network activates on some noise feature
+     Events like this make me think that high V plane ADC values maybe throw the network off? More weight decay to fix this?
+     ![V plane noise](https://github.com/LArbys/ubv4/blob/master/models/001/images_placedin_numc/NUMC_3.PNG)
+    
+
 
 ## Take aways for next try
 
