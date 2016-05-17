@@ -10,6 +10,7 @@ It uses all three views and merges them very late.
 
 It trained to >85% accuracy on the validation set.  The training set was 95% or maybe higher.
 
+![Training](https://github.com/LArbys/ubv4/blob/master/models/001/training_plot.png)
 
 ## Results
 
