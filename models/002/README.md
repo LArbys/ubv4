@@ -56,6 +56,10 @@ For attempt 2. Looks OK.  That long neutrino tail is probably events that I need
 
 <img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane1/model2_plane1_attempt2_valscores.png width=400>
 
+### First layer (stem_conv0) filters
+
+<img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane1/kernels_plane1.png width=400>
+
 ### Plane 2
 
 ### Validation Set Neutrino Score Distributions
