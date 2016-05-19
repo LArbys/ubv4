@@ -39,16 +39,37 @@ Still training, albeit slowly.
 
 ![Plane 2, Attemp 1](https://github.com/LArbys/ubv4/blob/master/models/002/plane2/training_plot_plane2.png)
 
+#### Attempt 2
+
+Attempt 1 ended with poor accuracy.  Attempt two now uses random cropping, the deeper network, and an initial 7x7, stride 3 filter.
+
+Plane 2 Attempt 2
+![Plane 2 Attempt 2](https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt2/training_plot.png)
+
 ## Results
+
+### Plane 1
 
 ### Validation Set Neutrino Score Distributions
 
-#### Plane 1
-
 For attempt 2. Looks OK.  That long neutrino tail is probably events that I need to filter (single proton events).  Also, maybe the neutrino distribution looks a little overtrained (maybe it's a bit too spikey?).
 
-
 <img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane1/model2_plane1_attempt2_valscores.png width=400>
+
+### Plane 2
+
+### Validation Set Neutrino Score Distributions
+
+Looks ok for attempt 2.
+
+<img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt2/plane2_attempt2_nuscores.png width=400>
+
+### First filters
+
+Filters don't show any recognizable features. I should have expanded this to 64.
+
+<img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt2/kernels_plane2.png width=100>
+
 
 ## Take aways
 
