@@ -27,7 +27,7 @@ Seems to have gotten stucked. So stopped it to lower weight decay to 0.001.
 
 This time I finished the inception resnet-v2 model.  Only 3 copies of modules B and C, however. Also, I added a 7x7, stride 3 filter at the very beginning. This served to extract bigger features and to shrink the output to the size of images that inception-resnet-v2 was working with in their paper.  This saved a lot of memory and allowed me to make the network deeper while using a bigger batch size. I also trained the data using a truncated ADC range, [0.45,3.55], and event-by-event smearing at the 0.01 level.  Note that I did not turn on pixel-by-pixel smearing.
 
-The result is that the network learned, but overtrainined. I am thinking that maybe adding further augmentation might help, just like it did in the 12 channel experiment (which kind of worked).
+To prevent overtraining, added further augmentation by using random cropping, similar to what was used in the 12 channel experiment (which kind of worked).
 
 ![Plane 1, Attempt 2](https://github.com/LArbys/ubv4/blob/master/models/002/plane1/training_plot_plane1.png)
 
