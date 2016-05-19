@@ -35,13 +35,13 @@ The result is that the network learned, but overtrainined. I am thinking that ma
 
 #### Attempt 1: weight decay 0.001, batch size 10. Still in Progress.
 
-Still training, albeit slowly.
+Ended up overtrained.
 
-![Plane 2, Attemp 1](https://github.com/LArbys/ubv4/blob/master/models/002/plane2/training_plot_plane2.png)
+![Plane 2, Attemp 1](https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt1/training_plot_plane2.png)
 
 #### Attempt 2
 
-Attempt 1 ended with poor accuracy.  Attempt two now uses random cropping, the deeper network, and an initial 7x7, stride 3 filter.
+Attempt 1 ended with poor accuracy.  Attempt two now uses random cropping, the deeper network described above for plane 1/attempt 2.  Which has a 7x7 stride 3 filter at the beginning.
 
 Plane 2 Attempt 2
 ![Plane 2 Attempt 2](https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt2/training_plot.png)
