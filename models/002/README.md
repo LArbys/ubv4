@@ -2,7 +2,7 @@
 
 ## Design
 
-Got a little further in implementing resnet inception v4. Now up to reduction B.  We are now training only one plane at a time. Uses silence to ignore the planes not in use.
+Got a little further in implementing resnet inception v4 (actually inception-resnet-v2 from the paper). Implemented all the modules, but the network is shallower as there arent as many copies of Modules B and C.  We are now training only one plane at a time. Uses silence to ignore the planes not in use.
 
 ## Training
 
