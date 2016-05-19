@@ -72,7 +72,7 @@ Looks ok for attempt 2.
 
 Filters don't show any recognizable features. I should have expanded this to 64.
 
-<img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt2/kernels_plane2.png width=100>
+<img src=https://github.com/LArbys/ubv4/blob/master/models/002/plane2/attempt2/kernels_plane2.png width=400>
 
 
 ## Take aways
