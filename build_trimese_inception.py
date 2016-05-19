@@ -28,7 +28,7 @@ def build_stem( corename, net, data_top, addbatchnorm=True, train=True ):
                                   32, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
     mp    = lt.pool_layer( net, conv3, "stem_mp1_%s"%(corename), 3, 2 )
     conv4 = lt.convolution_layer( net, conv3, "stem_conv4_%s"%(corename), "stem_conv4_%s"%(corename),
-                                  32, 2, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
+                                  32, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     ls    = [mp,conv4]
     cat   = lt.concat_layer( net, "stem_concat_%s"%(corename), *ls )
 
@@ -53,7 +53,7 @@ def build_stem( corename, net, data_top, addbatchnorm=True, train=True ):
 
     # split 2
     conv7  = lt.convolution_layer( net, cat2, "stem_conv7_%s"%(corename), "stem_conv7_%s"%(corename),
-                                   192, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=3, kernel_w=3, pad_h=0, pad_w=1 )
+                                   192, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_h=3, kernel_w=3, pad_h=1, pad_w=0 )
     mp7    = lt.pool_layer( net, cat2, "stem_mp7_%s"%(corename), 3, 2 )
 
     ls3 = [ conv7, mp7 ]
@@ -125,14 +125,14 @@ def reductionA( net, corename, bot, noutN, noutK, noutL, noutM, addbatchnorm=Tru
     mpa    = lt.pool_layer( net, bot, "reducA_mpA_%s"%(corename), 3, 2 )
     
     convb  = lt.convolution_layer( net, bot, "reducA_convb_%s"%(corename), "reducA_convb_%s"%(corename),
-                                   noutN, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=1, pad_h=0 )
+                                   noutN, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=0, pad_h=0 )
 
     convc1 = lt.convolution_layer( net, bot, "reducA_convc1_%s"%(corename), "reducA_convc1_%s"%(corename),
                                    noutK, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     convc2 = lt.convolution_layer( net, convc1, "reducA_convc2_%s"%(corename), "reducA_convc2_%s"%(corename),
                                    noutL, 1, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train )
     convc3 = lt.convolution_layer( net, convc2, "reducA_convc3_%s"%(corename), "reducA_convc3_%s"%(corename),
-                                   noutM, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=1, pad_h=0 )
+                                   noutM, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=0, pad_h=0 )
 
     ls  = [mpa,convb,convc3]
     cat = lt.concat_layer( net, "reducA_concat_%s"%(corename), *ls )
@@ -176,7 +176,7 @@ def reductionB( net, corename, bot, addbatchnorm=True, train=True ):
     convb1 = lt.convolution_layer( net, bot, "reducB_convb1_%s"%(corename), "reducB_convb1_%s"%(corename), 
                                    192, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm, train=train )
     convb2 = lt.convolution_layer( net, convb1, "reducB_convb2_%s"%(corename), "reducB_convb2_%s"%(corename),
-                                   192, 2, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=1, pad_h=0 )
+                                   192, 2, 3, 1, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=0, pad_h=0 )
     
     convc1 = lt.convolution_layer( net, bot, "reducB_convc1_%s"%(corename), "reducB_convc1_%s"%(corename),
                                    256, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train )
@@ -185,7 +185,7 @@ def reductionB( net, corename, bot, addbatchnorm=True, train=True ):
     convc3 = lt.convolution_layer( net, convc2, "reducB_convc3_%s"%(corename), "reducB_convc3_%s"%(corename),
                                    320, 1, 1, 0, 0.0, addbatchnorm=addbatchnorm,train=train, kernel_h=7, kernel_w=1, pad_h=3, pad_w=0 )
     convc4 = lt.convolution_layer( net, convc3, "reducB_convc4_%s"%(corename), "reducB_convc4_%s"%(corename),
-                                   320, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=1, pad_h=0 )
+                                   320, 2, 3, 0, 0.0, addbatchnorm=addbatchnorm, train=train, kernel_w=3, kernel_h=3, pad_w=0, pad_h=0 )
 
     ls = [ mpa, convb2, convc4 ]
     cat = lt.concat_layer( net, "reducB_concat_%s"%(corename), *ls )
@@ -409,21 +409,21 @@ layer {
 
 if __name__ == "__main__":
     
-    train_cfg = "train_filler_plane1.cfg"
-    test_cfg = "test_filler_plane1.cfg"
+    train_cfg = "train_filler_plane2.cfg"
+    test_cfg = "test_filler_plane2.cfg"
     use_batch_norm = True
 
-    train_net   = buildnet( train_cfg, 32, 756, 864, 3, use_batch_norm, net_type="train", targetplane=1  )
-    test_net    = buildnet( test_cfg,   1, 756, 864, 3, use_batch_norm, net_type="test", targetplane=1  )
+    train_net   = buildnet( train_cfg, 32, 756, 864, 3, use_batch_norm, net_type="train", targetplane=2  )
+    test_net    = buildnet( test_cfg,   1, 756, 864, 3, use_batch_norm, net_type="test", targetplane=2  )
 
     #deploy_net  = buildnet( testdb, test_mean, 1, 768, 768, 3, net_type="deploy"  )
 
-    trainout  = open('ub_trimese_inceptionv4_plane1_train.prototxt','w')
+    trainout  = open('ub_trimese_inceptionv4_plane2_train.prototxt','w')
     print >> trainout, "name:\"ubv4_train\""
     print >> trainout, train_net.to_proto()
     trainout.close()
     
-    testout   = open('ub_trimese_inceptionv4_plane1_test.prototxt','w')
+    testout   = open('ub_trimese_inceptionv4_plane2_test.prototxt','w')
     print >> testout, "name:\"ubv4_test\""
     print >> testout, test_net.to_proto()
     testout.close()
